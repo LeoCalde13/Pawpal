@@ -62,4 +62,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.squareup.okhttp3)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.retrofit)
+    implementation(libs.converter.moshi)
+    ksp(libs.moshi.kotlin.codegen)
 }
