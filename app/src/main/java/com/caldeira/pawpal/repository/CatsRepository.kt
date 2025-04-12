@@ -7,9 +7,10 @@ import com.caldeira.pawpal.model.CatDetails
 import com.caldeira.pawpal.model.CatDto
 import com.caldeira.pawpal.model.NetworkResult
 import com.caldeira.pawpal.model.handleResult
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 
 private const val LIMIT = 20
 private const val PAGE = 0
@@ -23,7 +24,7 @@ class CatsRepository {
     private val catsBreeds = mutableListOf<CatDetails>()
 
     suspend fun getCatBreeds(): List<CatDetails> {
-        if (catsBreeds.isNotEmpty()) return catsBreeds
+        if (catsBreeds.isNotEmpty()) return catsBreeds.map { it.copy() }
 
         val result = handleResult { CatsApi().getBreeds(LIMIT, PAGE) }
         if (result !is NetworkResult.Success) {
@@ -31,12 +32,11 @@ class CatsRepository {
             return emptyList()
         }
 
-        catsBreeds.addAll(mapWithImages(result.data))
-        return catsBreeds
+        return mapWithImages(result.data).also { it.map { k -> catsBreeds.add(k.copy()) } }
     }
 
     private suspend fun mapWithImages(data: List<CatDto>): List<CatDetails> {
-        return coroutineScope {
+        return withContext(Dispatchers.IO) {
             val deferredResults = data.map { cat ->
                 async {
                     cat.referenceImageId ?: return@async mapToCatDetails(cat)
@@ -62,7 +62,13 @@ class CatsRepository {
         }
     }
 
+    fun setBreedFavoriteState(id: String, isFavorite: Boolean) {
+        val cat = catsBreeds.find { it.id == id }
+        if (cat != null) cat.isFavorite = isFavorite
+    }
+
     private fun mapToCatDetails(catDto: CatDto, imageUrl: String = EMPTY_STRING) = CatDetails(
+        id = catDto.id,
         name = catDto.name,
         lifeExpectancy = catDto.lifeSpan
             .split(LIFESPAN_DELIMITER)

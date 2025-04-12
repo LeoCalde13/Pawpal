@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -27,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.caldeira.pawpal.R
-import com.caldeira.pawpal.model.CatDetails
 import com.caldeira.pawpal.ui.composables.AnimatedGradientButton
 import com.caldeira.pawpal.ui.composables.CatCard
 import com.caldeira.pawpal.ui.composables.SearchBox
@@ -35,16 +32,13 @@ import com.caldeira.pawpal.ui.viewmodels.MainViewModel
 
 @Composable
 fun CatBreedsScreen(viewmodel: MainViewModel = viewModel()) {
-    val catsList = viewmodel.breedsListState.collectAsStateWithLifecycle(emptyList())
-    Log.d("CatBreedsScreen", "cats=$catsList")
-
     Scaffold(
         topBar = { TopBar(text = stringResource(R.string.app_name)) },
         modifier = Modifier.fillMaxSize()
     ) { innerPaddings ->
         Box(Modifier.fillMaxSize()) {
 
-            CatsGrid(innerPaddings, catsList.value)
+            CatsGrid(innerPaddings, viewmodel)
 
             AnimatedGradientButton(
                 Modifier
@@ -66,20 +60,26 @@ fun CatBreedsScreen(viewmodel: MainViewModel = viewModel()) {
 }
 
 @Composable
-fun CatsGrid(paddingValues: PaddingValues, cats: List<CatDetails>) {
-    val state = remember { LazyGridState() }
+fun CatsGrid(paddingValues: PaddingValues, viewmodel: MainViewModel) {
+    val catsState = viewmodel.breedsListState.collectAsStateWithLifecycle()
 
     LazyVerticalGrid(
-        // todo review grid cells size
         columns = GridCells.FixedSize(150.dp),
-        state = state,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
         modifier = Modifier.padding(paddingValues),
-        contentPadding = PaddingValues(bottom = 60.dp)
+        contentPadding = PaddingValues(bottom = 60.dp),
     ) {
-        items(cats.size) {
-            CatCard(PaddingValues(2.dp), cats[it])
+        items(catsState.value.size) { i ->
+            Log.d("CatsGrid", "${catsState.value[i]}")
+            CatCard(
+                innerPadding = PaddingValues(2.dp),
+                catDetails = catsState.value[i],
+                onCardClicked = { },
+                onFavoriteClicked = {
+                  viewmodel.setBreedIsFavorite(catsState.value[i].id, !catsState.value[i].isFavorite)
+                },
+            )
         }
     }
 }
