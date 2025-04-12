@@ -21,20 +21,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.caldeira.pawpal.R
+import com.caldeira.pawpal.model.CatDetails
 
 @Composable
 fun CatCard(
     innerPadding: PaddingValues,
-    name: String,
-    isFavorite: Boolean,
-    lifeExpectancy: Int? = null,
+    catDetails: CatDetails,
     onCardClicked: () -> Unit = {},
     onFavoriteClicked: () -> Unit = {},
 ) {
     Card(
         onClick = { onCardClicked.invoke() },
-        colors = CardDefaults.cardColors(containerColor = Color.DarkGray),
+        colors = CardDefaults.cardColors(containerColor = Color.Gray),
         elevation = CardDefaults.cardElevation(10.dp),
         shape = RoundedCornerShape(25),
         modifier = Modifier
@@ -45,14 +45,9 @@ fun CatCard(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // TODO change image when image api is added
-            //AsyncImage(model = null, contentDescription = null)
-            Image(
-                painterResource(R.drawable.cat), "Cat",
-                contentScale = ContentScale.FillHeight
-            )
+            AsyncImage(model = catDetails.imageUrl, contentDescription = "Image of ${catDetails.name}",  contentScale = ContentScale.FillHeight)
 
-            FavoriteButton(Modifier.align(Alignment.TopEnd), isFavorite, onFavoriteClicked)
+            FavoriteButton(Modifier.align(Alignment.TopEnd), catDetails.isFavorite, onFavoriteClicked)
 
             Column(
                 modifier = Modifier
@@ -63,11 +58,9 @@ fun CatCard(
                 verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.Bottom),
             ) {
                 // TODO fix colors
-                lifeExpectancy?.let {
-                    ChipText(stringResource(R.string.life_span_years, lifeExpectancy), Color.White, Color.DarkGray)
-                }
+                ChipText(stringResource(R.string.life_span_years, catDetails.lifeExpectancy), Color.White, Color.DarkGray)
 
-                ChipText(name, Color.Black, Color.White)
+                ChipText(catDetails.name, Color.Black, Color.White)
 
             }
         }
@@ -93,7 +86,7 @@ fun FavoriteButton(modifier: Modifier, isFavorite: Boolean, onFavoriteClicked: (
 @Preview(showBackground = true)
 @Composable
 private fun CatCardPreview() {
-    CatCard(PaddingValues(2.dp), "American Shorthair", true, 15)
+    CatCard(PaddingValues(2.dp), CatDetails("American Shorthair", 15, true, imageUrl = "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg"))
 }
 
 

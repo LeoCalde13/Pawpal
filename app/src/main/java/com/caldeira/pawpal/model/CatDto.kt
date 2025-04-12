@@ -52,3 +52,12 @@ data class WeightDto(
     val imperial: String,
     val metric: String
 )
+
+@JsonClass(generateAdapter = true)
+data class ImageDto(
+    val id: String,
+    val url: String,
+    val width: Int,
+    val height: Int,
+    val breeds: List<CatDto>,
+)

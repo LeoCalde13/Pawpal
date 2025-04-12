@@ -12,4 +12,5 @@ data class CatDetails(
     val origin: String = EMPTY_STRING,
     val temperament: List<String> = emptyList(),
     val description: String = EMPTY_STRING,
+    val imageUrl: String = EMPTY_STRING,
 )

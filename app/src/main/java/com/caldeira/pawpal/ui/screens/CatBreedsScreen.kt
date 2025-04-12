@@ -73,9 +73,7 @@ fun CatsGrid(paddingValues: PaddingValues, cats: List<CatDetails>) {
         contentPadding = PaddingValues(bottom = 60.dp)
     ) {
         items(cats.size) {
-            cats[it].let { cat ->
-                CatCard(PaddingValues(2.dp), cat.name, cat.isFavorite, cat.lifeExpectancy)
-            }
+            CatCard(PaddingValues(2.dp), cats[it])
         }
     }
 }
