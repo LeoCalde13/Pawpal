@@ -20,15 +20,19 @@ private const val TEMPERAMENT_DELIMITER = ", "
  * Handles getting cats data using [CatsApi]
  */
 class CatsRepository {
+    private val catsBreeds = mutableListOf<CatDetails>()
+
     suspend fun getCatBreeds(): List<CatDetails> {
+        if (catsBreeds.isNotEmpty()) return catsBreeds
+
         val result = handleResult { CatsApi().getBreeds(LIMIT, PAGE) }
         if (result !is NetworkResult.Success) {
             Log.e("CatsRepository", "Error retrieving cats' breeds | result=$result")
             return emptyList()
         }
 
-        val catsDetails = mapWithImages(result.data)
-        return catsDetails
+        catsBreeds.addAll(mapWithImages(result.data))
+        return catsBreeds
     }
 
     private suspend fun mapWithImages(data: List<CatDto>): List<CatDetails> {

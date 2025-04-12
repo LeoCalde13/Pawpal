@@ -9,10 +9,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -25,13 +21,16 @@ import com.caldeira.pawpal.EMPTY_STRING
 import com.caldeira.pawpal.R
 
 @Composable
-fun SearchBox(modifier: Modifier = Modifier) {
-    var value by remember { mutableStateOf(EMPTY_STRING) }
+fun SearchBox(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (input: String) -> Unit = { }
+) {
     val outlineShape = RoundedCornerShape(100)
 
     BasicTextField(
         value = value,
-        onValueChange = { value = it },
+        onValueChange = { onValueChange(it) },
         modifier = modifier
             .fillMaxWidth()
             .border(
@@ -71,5 +70,9 @@ fun SearchBox(modifier: Modifier = Modifier) {
 @Preview(showBackground = false)
 @Composable
 private fun EditBoxPreview() {
-    SearchBox()
+    SearchBox(
+        modifier = Modifier,
+        value = EMPTY_STRING,
+        onValueChange = { }
+    )
 }
