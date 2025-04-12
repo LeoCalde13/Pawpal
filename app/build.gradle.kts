@@ -67,4 +67,5 @@ dependencies {
     ksp(libs.moshi.kotlin.codegen)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.lifecycle.viewmodel.compose)
 }

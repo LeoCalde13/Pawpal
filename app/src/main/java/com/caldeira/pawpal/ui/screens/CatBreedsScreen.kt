@@ -1,5 +1,6 @@
 package com.caldeira.pawpal.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,21 +24,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.caldeira.pawpal.R
 import com.caldeira.pawpal.model.CatDetails
 import com.caldeira.pawpal.ui.composables.AnimatedGradientButton
 import com.caldeira.pawpal.ui.composables.CatCard
 import com.caldeira.pawpal.ui.composables.SearchBox
+import com.caldeira.pawpal.ui.viewmodels.MainViewModel
 
 
 @Composable
-fun CatBreedsScreen() {
+fun CatBreedsScreen(viewmodel: MainViewModel = viewModel()) {
+    val catsList = viewmodel.breedsListState.value
+    Log.d("CatBreedsScreen", "cats=$catsList")
     Scaffold(
         topBar = { TopBar(text = stringResource(R.string.app_name)) },
         modifier = Modifier.fillMaxSize()
     ) { innerPaddings ->
         Box(Modifier.fillMaxSize()) {
-            CatsGrid(innerPaddings, cats)
+            CatsGrid(innerPaddings, catsList)
             AnimatedGradientButton(
                 Modifier
                     .padding(30.dp)
@@ -67,11 +72,11 @@ fun CatsGrid(paddingValues: PaddingValues, cats: List<CatDetails>) {
         modifier = Modifier.padding(paddingValues),
         contentPadding = PaddingValues(bottom = 60.dp)
     ) {
-            items(cats.size) {
-                cats[it].let { cat ->
-                    CatCard(PaddingValues(2.dp), cat.name, cat.isFavorite, cat.lifeExpectancy)
-                }
+        items(cats.size) {
+            cats[it].let { cat ->
+                CatCard(PaddingValues(2.dp), cat.name, cat.isFavorite, cat.lifeExpectancy)
             }
+        }
     }
 }
 
@@ -109,21 +114,3 @@ fun TopBarPreview() {
 private fun CatBreedsScreenPreview() {
     CatBreedsScreen()
 }
-
-
-private val cats = listOf(
-    CatDetails("American Shorthair", 16, true),
-    CatDetails("Abyssinian", 16, true),
-    CatDetails("Bengal", 16, false),
-    CatDetails("Siamese", 16, false),
-    CatDetails("Ragdoll", 16, true),
-    CatDetails("Sphynx", 16, false),
-    CatDetails("Burmese", 16, true),
-    CatDetails("Russian Blue", 16, true),
-    CatDetails("Abyssinian", 16, true),
-    CatDetails("Bengal", 16, false),
-    CatDetails("Siamese", 16, false),
-    CatDetails("Ragdoll", 16, true),
-    CatDetails("Sphynx", 16, false),
-    CatDetails("Burmese", 16, true),
-)
