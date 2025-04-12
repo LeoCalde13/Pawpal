@@ -65,4 +65,6 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.moshi)
     ksp(libs.moshi.kotlin.codegen)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }

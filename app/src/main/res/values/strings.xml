@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Pawpal</string>
+    <string name="favorites">Favorites</string>
+    <string name="cd_favorite_button">Favorite button</string>
+    <string name="life_span_years">%1$s years</string>
+    <string name="search_placeholder">Search meow</string>
 </resources>

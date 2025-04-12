@@ -45,19 +45,10 @@ data class CatDto(
     @Json(name = "wikipedia_url") val wikipediaUrl: String? = null,
     val hypoallergenic: Int,
     @Json(name = "reference_image_id") val referenceImageId: String? = null,
-    val image: ImageDto? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class WeightDto(
     val imperial: String,
     val metric: String
-)
-
-@JsonClass(generateAdapter = true)
-data class ImageDto(
-    val id: String,
-    val width: Int,
-    val height: Int,
-    val url: String
 )
