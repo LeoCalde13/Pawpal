@@ -7,7 +7,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -20,7 +19,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.caldeira.pawpal.R
 
 @Composable
@@ -47,7 +45,6 @@ fun AnimatedGradientButton(modifier: Modifier, text: String, onClick: () -> Unit
         colors = ButtonColors(Color.Transparent,Color.Transparent,Color.Transparent,Color.Transparent),
         onClick = { onClick.invoke() },
         modifier = modifier
-            .padding(16.dp)
             .background(brush = gradientBrush, shape = RoundedCornerShape(100))
     ) {
         Text(text, color = Color.White)

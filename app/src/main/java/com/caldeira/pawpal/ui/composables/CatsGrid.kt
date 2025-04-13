@@ -3,7 +3,6 @@ package com.caldeira.pawpal.ui.composables
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
@@ -15,7 +14,7 @@ import com.caldeira.pawpal.model.CatDetails
 
 @Composable
 fun CatsGrid(
-    paddingValues: PaddingValues,
+    modifier: Modifier,
     items: List<CatDetails>,
     onFavoriteClicked: (String, Boolean) -> Unit
 ) {
@@ -24,8 +23,7 @@ fun CatsGrid(
         columns = GridCells.FixedSize(150.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
-        modifier = Modifier.padding(paddingValues),
-        contentPadding = PaddingValues(bottom = 60.dp),
+        modifier = modifier,
     ) {
         items(items.size) { i ->
             Log.d("CatsGrid", "${items[i]}")
