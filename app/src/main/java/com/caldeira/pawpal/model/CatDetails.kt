@@ -14,4 +14,8 @@ data class CatDetails(
     val temperament: List<String> = emptyList(),
     val description: String = EMPTY_STRING,
     val imageUrl: String = EMPTY_STRING,
-)
+) {
+    override fun toString(): String {
+        return "CatDetails(name='$name', isFavorite=$isFavorite, id='$id')"
+    }
+}

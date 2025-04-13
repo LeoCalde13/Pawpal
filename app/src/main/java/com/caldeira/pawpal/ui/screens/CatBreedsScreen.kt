@@ -1,50 +1,66 @@
 package com.caldeira.pawpal.ui.screens
 
-import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.caldeira.pawpal.R
 import com.caldeira.pawpal.ui.composables.AnimatedGradientButton
-import com.caldeira.pawpal.ui.composables.CatCard
+import com.caldeira.pawpal.ui.composables.CatsGrid
 import com.caldeira.pawpal.ui.composables.SearchBox
-import com.caldeira.pawpal.ui.viewmodels.MainViewModel
+import com.caldeira.pawpal.ui.composables.TopBar
+import com.caldeira.pawpal.ui.viewmodels.CatsBreedsViewModel
 
 @Composable
-fun CatBreedsScreen(viewmodel: MainViewModel = viewModel()) {
+fun CatBreedsScreen(navController: NavHostController, viewmodel: CatsBreedsViewModel = hiltViewModel()) {
+    val catsState = viewmodel.breedsListState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewmodel.fetchCatBreeds()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     Scaffold(
         topBar = { TopBar(text = stringResource(R.string.app_name)) },
         modifier = Modifier.fillMaxSize()
     ) { innerPaddings ->
         Box(Modifier.fillMaxSize()) {
+            CatsGrid(innerPaddings, catsState.value) { id, isFavorite->
+                viewmodel.setBreedIsFavorite(id, isFavorite)
+            }
 
-            CatsGrid(innerPaddings, viewmodel)
-
+            // FavoriteButton
             AnimatedGradientButton(
                 Modifier
                     .padding(30.dp)
                     .align(Alignment.TopEnd),
-                stringResource(R.string.favorites)
+                stringResource(R.string.favorites),
+                onClick = {
+                    navController.navigate(Screen.FavoriteCatsScreen.route)
+                }
             )
 
             SearchBox(
@@ -59,62 +75,9 @@ fun CatBreedsScreen(viewmodel: MainViewModel = viewModel()) {
     }
 }
 
-@Composable
-fun CatsGrid(paddingValues: PaddingValues, viewmodel: MainViewModel) {
-    val catsState = viewmodel.breedsListState.collectAsStateWithLifecycle()
-
-    LazyVerticalGrid(
-        columns = GridCells.FixedSize(150.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
-        modifier = Modifier.padding(paddingValues),
-        contentPadding = PaddingValues(bottom = 60.dp),
-    ) {
-        items(catsState.value.size) { i ->
-            Log.d("CatsGrid", "${catsState.value[i]}")
-            CatCard(
-                innerPadding = PaddingValues(2.dp),
-                catDetails = catsState.value[i],
-                onCardClicked = { },
-                onFavoriteClicked = {
-                  viewmodel.setBreedIsFavorite(catsState.value[i].id, !catsState.value[i].isFavorite)
-                },
-            )
-        }
-    }
-}
-
-@Composable
-fun TopBar(text: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                brush = Brush.verticalGradient(
-                    0.0f to Color.White,
-                    0.5f to Color.White,
-                    1f to Color(1, 1, 1, 0)
-                ),
-            )
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Preview(showBackground = false)
-@Composable
-fun TopBarPreview() {
-    TopBar(stringResource(R.string.app_name))
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun CatBreedsScreenPreview() {
-    CatBreedsScreen()
+    val controller = rememberNavController()
+    CatBreedsScreen(controller)
 }

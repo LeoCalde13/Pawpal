@@ -1,30 +1,40 @@
 package com.caldeira.pawpal.ui.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.caldeira.pawpal.EMPTY_STRING
 import com.caldeira.pawpal.model.CatDetails
 import com.caldeira.pawpal.repository.CatsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel(
-    private val catsRepository: CatsRepository = CatsRepository(),
-    defaultDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : ViewModel() {
+private const val TAG = "CatsBreedsViewModel"
+
+@HiltViewModel
+class CatsBreedsViewModel @Inject constructor(
+    private val catsRepository: CatsRepository,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.IO,
+): ViewModel() {
     private val _breedsListState = MutableStateFlow(emptyList<CatDetails>())
     val breedsListState = _breedsListState.asStateFlow()
 
     val searchState = mutableStateOf(EMPTY_STRING)
 
     init {
+        fetchCatBreeds()
+    }
+
+    fun fetchCatBreeds() {
+        Log.d(TAG, "fetching")
         viewModelScope.launch(defaultDispatcher) {
-            _breedsListState.value =
-                mutableListOf<CatDetails>().apply { addAll(catsRepository.getCatBreeds()) }
+            _breedsListState.value = catsRepository.getCatBreeds()
         }
     }
 
