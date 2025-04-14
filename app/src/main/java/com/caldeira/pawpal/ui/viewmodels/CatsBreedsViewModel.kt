@@ -41,7 +41,6 @@ class CatsBreedsViewModel @Inject constructor(
         searchState.value = query
         viewModelScope.launch {
             _breedsListState.value = catsRepository.getCatBreeds().filtered()
-
         }
     }
 

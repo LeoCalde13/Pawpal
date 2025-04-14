@@ -8,6 +8,9 @@ import com.caldeira.pawpal.model.CatDetails
 import com.caldeira.pawpal.model.CatDto
 import com.caldeira.pawpal.model.NetworkResult
 import com.caldeira.pawpal.model.handleResult
+import com.caldeira.pawpal.model.toCatDetails
+import com.caldeira.pawpal.model.toCatDetailsList
+import com.caldeira.pawpal.model.toEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -39,7 +42,7 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
     }
 
     suspend fun getBreedDetails(id: String) =
-        withContext(Dispatchers.IO) { breedsDb.getBreedById(id) }
+        withContext(Dispatchers.IO) { breedsDb.getBreedById(id)?.toCatDetails() }
 
     suspend fun setBreedFavoriteState(id: String, isFavorite: Boolean) =
         withContext(Dispatchers.IO) {
@@ -63,7 +66,7 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
                     // cache the breed into the db
                     breed.run {
                         if (breedsDb.hasBreed(id)) breedsDb.getBreedById(id)
-                        else breedsDb.insert(this)
+                        else breedsDb.insert(toEntity())
                     }
 
                     return@async breed
@@ -92,7 +95,7 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
         return imageResult.data.url
     }
 
-    private suspend fun getCachedBreeds() = withContext(Dispatchers.IO) { breedsDb.getAll() }
+    private suspend fun getCachedBreeds() = withContext(Dispatchers.IO) { breedsDb.getAll().toCatDetailsList() }
 
     private fun mapToCatDetails(catDto: CatDto, imageUrl: String = EMPTY_STRING) = CatDetails(
         id = catDto.id,
