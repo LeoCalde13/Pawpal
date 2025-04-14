@@ -79,4 +79,6 @@ class CatsRepository {
         description = catDto.description,
         imageUrl = imageUrl
     )
+
+    fun getBreedDetails(id: String?): CatDetails? = catsBreeds.find { it.id == id }?.copy()
 }

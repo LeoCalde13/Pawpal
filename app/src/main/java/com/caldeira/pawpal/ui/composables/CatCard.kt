@@ -26,6 +26,7 @@ import com.caldeira.pawpal.model.CatDetails
 fun CatCard(
     innerPadding: PaddingValues,
     catDetails: CatDetails,
+    showLifeSpan: Boolean = false,
     onCardClicked: () -> Unit = {},
     onFavoriteClicked: () -> Unit = {},
 ) {
@@ -42,9 +43,16 @@ fun CatCard(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            AsyncImage(model = catDetails.imageUrl, contentDescription = "Image of ${catDetails.name}",  contentScale = ContentScale.FillHeight)
+            AsyncImage(
+                model = catDetails.imageUrl,
+                contentDescription = "Image of ${catDetails.name}",
+                contentScale = ContentScale.FillHeight
+            )
 
-            FavoriteButton(Modifier.align(Alignment.TopEnd), catDetails.isFavorite, onFavoriteClicked)
+            FavoriteButton(
+                Modifier.align(Alignment.TopEnd),
+                28.dp, catDetails.isFavorite, onFavoriteClicked
+            )
 
             Column(
                 modifier = Modifier
@@ -54,9 +62,14 @@ fun CatCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.Bottom),
             ) {
-                // TODO fix colors
-                ChipText(stringResource(R.string.life_span_years, catDetails.lifeExpectancy), Color.White, Color.DarkGray)
-
+                if (showLifeSpan) {
+                    ChipText(
+                        stringResource(R.string.life_span_years, catDetails.lifeExpectancy),
+                        Color.White,
+                        Color.DarkGray
+                    )
+                }
+                
                 ChipText(catDetails.name, Color.Black, Color.White)
 
             }
@@ -68,5 +81,14 @@ fun CatCard(
 @Preview(showBackground = true)
 @Composable
 private fun CatCardPreview() {
-    CatCard(PaddingValues(2.dp), CatDetails("id", "American Shorthair", 15, true, imageUrl = "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg"))
+    CatCard(
+        PaddingValues(2.dp),
+        CatDetails(
+            "id",
+            "American Shorthair",
+            15,
+            true,
+            imageUrl = "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg"
+        )
+    )
 }
