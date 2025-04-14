@@ -51,9 +51,11 @@ fun CatBreedsScreen(
         topBar = { TopBar(text = stringResource(R.string.app_name)) },
         modifier = Modifier.fillMaxSize()
     ) { innerPaddings ->
-        Column(Modifier
-            .fillMaxSize()
-            .padding(innerPaddings)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(innerPaddings)
+        ) {
             CatsGrid(navController, Modifier.weight(1f), catsState.value, false) { id, isFavorite ->
                 viewmodel.setBreedIsFavorite(id, isFavorite)
             }

@@ -17,7 +17,7 @@ import javax.inject.Inject
 class CatDetailsViewModel @Inject constructor(
     private val catsRepository: CatsRepository,
     private val savedStateHandle: SavedStateHandle,
-    defaultDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : BaseViewModel(catsRepository) {
     private val _breedDetails = MutableStateFlow<CatDetails?>(null)
     val breedDetails = _breedDetails.asStateFlow()

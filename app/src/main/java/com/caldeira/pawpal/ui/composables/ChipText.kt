@@ -12,7 +12,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// TODO support different min sizes
 @Composable
 fun ChipText(text: String, textColor: Color, backgroundColor: Color) {
     Box(
@@ -21,7 +20,7 @@ fun ChipText(text: String, textColor: Color, backgroundColor: Color) {
                 color = backgroundColor,
                 shape = RoundedCornerShape(16.dp)
             )
-            .padding(8.dp)
+            .padding(vertical = 2.dp, horizontal = 3.dp)
     ) {
         Text(
             text = text,

@@ -19,7 +19,7 @@ private const val TAG = "CatsBreedsViewModel"
 @HiltViewModel
 class CatsBreedsViewModel @Inject constructor(
     private val catsRepository: CatsRepository,
-    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : BaseViewModel(catsRepository) {
     private val _breedsListState = MutableStateFlow(emptyList<CatDetails>())
     val breedsListState = _breedsListState.asStateFlow()

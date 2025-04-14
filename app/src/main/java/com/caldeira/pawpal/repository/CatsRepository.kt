@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-private const val LIMIT = 20
+private const val LIMIT = 40
 private const val PAGE = 0
 private const val LIFESPAN_DELIMITER = " - "
 
@@ -31,6 +31,7 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
 
     suspend fun getCatBreeds(): List<CatDetails> = withContext(Dispatchers.IO) {
         if (isCacheInitialized) return@withContext getCachedBreeds()
+
         val result = handleResult { CatsApi().getBreeds(LIMIT, PAGE) }
         if (result !is NetworkResult.Success) {
             Log.e("CatsRepository", "Error retrieving cats' breeds | result=$result")
@@ -53,23 +54,19 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
         val cacheJob = CoroutineScope(Dispatchers.IO).launch {
             val deferredResults = data.map { cat ->
                 async {
-                    cat.referenceImageId ?: return@async mapToCatDetails(cat)
+                    cat.referenceImageId ?: return@async
 
                     // get image
                     val imageUrl = getReferenceImageUrl(cat.referenceImageId)
 
                     // map to cat details data class
-                    val breed = mapToCatDetails(cat, imageUrl)
+                    if (breedsDb.getBreedById(cat.id) != null) return@async
 
+                    val breed = mapToCatDetails(cat, imageUrl)
                     Log.d("CatsRepository", "caching breed | $breed")
 
                     // cache the breed into the db
-                    breed.run {
-                        if (breedsDb.hasBreed(id)) breedsDb.getBreedById(id)
-                        else breedsDb.insert(toEntity())
-                    }
-
-                    return@async breed
+                    breedsDb.insert(breed.toEntity())
                 }
 
             }
@@ -78,7 +75,6 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
         }
 
         cacheJob.join()
-        isCacheInitialized = true
     }
 
     private suspend fun getReferenceImageUrl(referenceImage: String): String {

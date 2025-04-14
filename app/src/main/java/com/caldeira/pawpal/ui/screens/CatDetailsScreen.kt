@@ -49,7 +49,9 @@ fun CatDetailsScreen(viewmodel: CatDetailsViewModel = hiltViewModel()) {
             50.dp,
             details.value?.isFavorite ?: false
         ) {
-
+            details.value?.let {
+                viewmodel.setBreedIsFavorite(it.id, !it.isFavorite)
+            }
         }
 
         Column(

@@ -34,7 +34,6 @@ fun SearchBox(
             .border(
                 width = 2.dp,
                 brush = Brush.horizontalGradient(
-                    // todo fix color
                     colors = listOf(Color(0xFF6193E6), Color(0xFFF3848A))
                 ),
                 shape = outlineShape
