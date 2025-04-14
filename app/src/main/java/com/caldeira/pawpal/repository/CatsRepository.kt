@@ -2,70 +2,97 @@ package com.caldeira.pawpal.repository
 
 import android.util.Log
 import com.caldeira.pawpal.EMPTY_STRING
+import com.caldeira.pawpal.data.BreedsDao
 import com.caldeira.pawpal.data.CatsApi
 import com.caldeira.pawpal.model.CatDetails
 import com.caldeira.pawpal.model.CatDto
 import com.caldeira.pawpal.model.NetworkResult
 import com.caldeira.pawpal.model.handleResult
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 private const val LIMIT = 20
 private const val PAGE = 0
 private const val LIFESPAN_DELIMITER = " - "
-private const val TEMPERAMENT_DELIMITER = ", "
 
 /**
  * Handles getting cats data using [CatsApi]
  */
-class CatsRepository {
-    private val catsBreeds = mutableListOf<CatDetails>()
+class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
+    private var isCacheInitialized = false
 
-    suspend fun getCatBreeds(): List<CatDetails> {
-        if (catsBreeds.isNotEmpty()) return catsBreeds.map { it.copy() }
-
+    suspend fun getCatBreeds(): List<CatDetails> = withContext(Dispatchers.IO) {
+        if (isCacheInitialized) return@withContext getCachedBreeds()
         val result = handleResult { CatsApi().getBreeds(LIMIT, PAGE) }
         if (result !is NetworkResult.Success) {
             Log.e("CatsRepository", "Error retrieving cats' breeds | result=$result")
-            return emptyList()
+            return@withContext getCachedBreeds()
         }
 
-        return mapWithImages(result.data).also { it.map { k -> catsBreeds.add(k.copy()) } }
+        cacheBreeds(result.data)
+        return@withContext getCachedBreeds()
     }
 
-    private suspend fun mapWithImages(data: List<CatDto>): List<CatDetails> {
-        return withContext(Dispatchers.IO) {
+    suspend fun getBreedDetails(id: String) =
+        withContext(Dispatchers.IO) { breedsDb.getBreedById(id) }
+
+    suspend fun setBreedFavoriteState(id: String, isFavorite: Boolean) =
+        withContext(Dispatchers.IO) {
+            breedsDb.updateFavorite(id, isFavorite)
+        }
+
+    private suspend fun cacheBreeds(data: List<CatDto>) {
+        val cacheJob = CoroutineScope(Dispatchers.IO).launch {
             val deferredResults = data.map { cat ->
                 async {
                     cat.referenceImageId ?: return@async mapToCatDetails(cat)
 
-                    val imageResult =
-                        handleResult { CatsApi().getBreedsImageUrl(cat.referenceImageId) }
-                    if (imageResult !is NetworkResult.Success) {
-                        Log.e(
-                            "CatsRepository",
-                            "Error retrieving image for ${cat.name} | imageResult=$imageResult"
-                        )
-                        return@async mapToCatDetails(cat)
+                    // get image
+                    val imageUrl = getReferenceImageUrl(cat.referenceImageId)
+
+                    // map to cat details data class
+                    val breed = mapToCatDetails(cat, imageUrl)
+
+                    Log.d("CatsRepository", "caching breed | $breed")
+
+                    // cache the breed into the db
+                    breed.run {
+                        if (breedsDb.hasBreed(id)) breedsDb.getBreedById(id)
+                        else breedsDb.insert(this)
                     }
 
-                    val image = imageResult.data
-
-                    Log.d("CatsRepository", "got cat image | imageUrl=${image.url}")
-                    return@async mapToCatDetails(cat, image.url)
+                    return@async breed
                 }
+
             }
 
             deferredResults.awaitAll()
         }
+
+        cacheJob.join()
+        isCacheInitialized = true
     }
 
-    fun setBreedFavoriteState(id: String, isFavorite: Boolean) {
-        val cat = catsBreeds.find { it.id == id }
-        if (cat != null) cat.isFavorite = isFavorite
+    private suspend fun getReferenceImageUrl(referenceImage: String): String {
+        val imageResult =
+            handleResult { CatsApi().getBreedsImageUrl(referenceImage) }
+        if (imageResult !is NetworkResult.Success) {
+            Log.e(
+                "CatsRepository",
+                "Error retrieving image $referenceImage | imageResult=$imageResult"
+            )
+            return EMPTY_STRING
+        }
+
+        return imageResult.data.url
     }
+
+    private suspend fun getCachedBreeds() = withContext(Dispatchers.IO) { breedsDb.getAll() }
 
     private fun mapToCatDetails(catDto: CatDto, imageUrl: String = EMPTY_STRING) = CatDetails(
         id = catDto.id,
@@ -75,10 +102,8 @@ class CatsRepository {
             .firstOrNull()?.toIntOrNull() ?: -1,
         isFavorite = false,
         origin = catDto.origin,
-        temperament = catDto.temperament.split(TEMPERAMENT_DELIMITER),
+        temperament = catDto.temperament,
         description = catDto.description,
         imageUrl = imageUrl
     )
-
-    fun getBreedDetails(id: String?): CatDetails? = catsBreeds.find { it.id == id }?.copy()
 }

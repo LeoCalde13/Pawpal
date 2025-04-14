@@ -12,7 +12,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -20,9 +19,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.caldeira.pawpal.R
-import com.caldeira.pawpal.repository.CatsRepository
 import com.caldeira.pawpal.ui.composables.AnimatedGradientButton
 import com.caldeira.pawpal.ui.composables.CatsGrid
 import com.caldeira.pawpal.ui.composables.SearchBox
@@ -54,7 +51,9 @@ fun CatBreedsScreen(
         topBar = { TopBar(text = stringResource(R.string.app_name)) },
         modifier = Modifier.fillMaxSize()
     ) { innerPaddings ->
-        Column(Modifier.fillMaxSize().padding(innerPaddings)) {
+        Column(Modifier
+            .fillMaxSize()
+            .padding(innerPaddings)) {
             CatsGrid(navController, Modifier.weight(1f), catsState.value, false) { id, isFavorite ->
                 viewmodel.setBreedIsFavorite(id, isFavorite)
             }
@@ -86,10 +85,4 @@ fun CatBreedsScreen(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun CatBreedsScreenPreview() {
-    CatBreedsScreen(rememberNavController(), CatsBreedsViewModel(CatsRepository()))
 }

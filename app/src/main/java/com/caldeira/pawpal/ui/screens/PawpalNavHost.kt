@@ -12,6 +12,7 @@ sealed class Screen(val route: String) {
     data object FavoriteCatsScreen : Screen("favoriteCatScreen")
     data object CatDetailsScreen : Screen("favoriteCatScreen/{catId}") {
         fun createRoute(catId: String): String = "favoriteCatScreen/$catId"
+        const val ID_ARG = "catId"
     }
 }
 
@@ -22,8 +23,8 @@ fun PawpalNavHost(navController: NavHostController) {
         composable(Screen.FavoriteCatsScreen.route) { FavoriteCatsScreen(navController) }
         composable(
             route = Screen.CatDetailsScreen.route,
-            arguments = listOf(navArgument("catId") { type = NavType.StringType })
-        ) { backStackEntry ->
+            arguments = listOf(navArgument(Screen.CatDetailsScreen.ID_ARG) { type = NavType.StringType })
+        ) { _ ->
             CatDetailsScreen()
         }
     }

@@ -88,7 +88,7 @@ fun CatDetailsScreen(viewmodel: CatDetailsViewModel = hiltViewModel()) {
                 )
 
                 Text(
-                    temperament.joinToString(" ● "),
+                    temperament,
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Normal,
