@@ -25,7 +25,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDefaultDispatcher() = Dispatchers.IO
+    fun provideDefaultDispatcher() = Dispatchers.Default
 
     @Provides
     @Singleton
