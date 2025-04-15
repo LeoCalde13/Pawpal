@@ -20,10 +20,4 @@ interface BreedsDao {
 
     @Query("UPDATE $DATABASE_BREEDS_TABLE SET isFavorite = :isFavorite WHERE id = :id")
     fun updateFavorite(id: String, isFavorite: Boolean)
-
-    @Query("SELECT EXISTS(SELECT 1 FROM $DATABASE_BREEDS_TABLE WHERE id = :id)")
-    fun hasBreed(id: String): Boolean
-
-    @Query("DELETE FROM $DATABASE_BREEDS_TABLE")
-    fun deleteAll()
 }

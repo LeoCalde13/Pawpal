@@ -22,11 +22,12 @@ import javax.inject.Inject
 private const val LIMIT = 40
 private const val PAGE = 0
 private const val LIFESPAN_DELIMITER = " - "
+private const val TAG = "CatsRepository"
 
 /**
  * Handles getting cats data using [CatsApi]
  */
-class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
+class CatsRepository @Inject constructor(private val breedsDao: BreedsDao) {
     private var isCacheInitialized = false
 
     suspend fun getCatBreeds(): List<CatDetails> = withContext(Dispatchers.IO) {
@@ -34,20 +35,21 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
 
         val result = handleResult { CatsApi().getBreeds(LIMIT, PAGE) }
         if (result !is NetworkResult.Success) {
-            Log.e("CatsRepository", "Error retrieving cats' breeds | result=$result")
+            Log.e(TAG, "Error retrieving cats' breeds | result=$result")
             return@withContext getCachedBreeds()
         }
+        Log.d(TAG, "Got breeds | result=$result")
 
         cacheBreeds(result.data)
         return@withContext getCachedBreeds()
     }
 
     suspend fun getBreedDetails(id: String) =
-        withContext(Dispatchers.IO) { breedsDb.getBreedById(id)?.toCatDetails() }
+        withContext(Dispatchers.IO) { breedsDao.getBreedById(id)?.toCatDetails() }
 
     suspend fun setBreedFavoriteState(id: String, isFavorite: Boolean) =
         withContext(Dispatchers.IO) {
-            breedsDb.updateFavorite(id, isFavorite)
+            breedsDao.updateFavorite(id, isFavorite)
         }
 
     private suspend fun cacheBreeds(data: List<CatDto>) {
@@ -59,14 +61,15 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
                     // get image
                     val imageUrl = getReferenceImageUrl(cat.referenceImageId)
 
-                    // map to cat details data class
-                    if (breedsDb.getBreedById(cat.id) != null) return@async
+                    // if breed is already cached, ignore it
+                    if (breedsDao.getBreedById(cat.id) != null) return@async
 
+                    // map to cat details data class
                     val breed = mapToCatDetails(cat, imageUrl)
-                    Log.d("CatsRepository", "caching breed | $breed")
+                    Log.d(TAG, "caching breed | $breed")
 
                     // cache the breed into the db
-                    breedsDb.insert(breed.toEntity())
+                    breedsDao.insert(breed.toEntity())
                 }
 
             }
@@ -75,6 +78,7 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
         }
 
         cacheJob.join()
+        isCacheInitialized = true
     }
 
     private suspend fun getReferenceImageUrl(referenceImage: String): String {
@@ -82,7 +86,7 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
             handleResult { CatsApi().getBreedsImageUrl(referenceImage) }
         if (imageResult !is NetworkResult.Success) {
             Log.e(
-                "CatsRepository",
+                TAG,
                 "Error retrieving image $referenceImage | imageResult=$imageResult"
             )
             return EMPTY_STRING
@@ -91,7 +95,10 @@ class CatsRepository @Inject constructor(private val breedsDb: BreedsDao) {
         return imageResult.data.url
     }
 
-    private suspend fun getCachedBreeds() = withContext(Dispatchers.IO) { breedsDb.getAll().toCatDetailsList() }
+    private suspend fun getCachedBreeds() = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Getting breeds from cache")
+        breedsDao.getAll().toCatDetailsList()
+    }
 
     private fun mapToCatDetails(catDto: CatDto, imageUrl: String = EMPTY_STRING) = CatDetails(
         id = catDto.id,
